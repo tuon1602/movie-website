@@ -1,24 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
-
+import "antd/dist/reset.css";
+import Header from "./component/Header";
+import { Layout, Space } from "antd";
+import Main from "./pages/Main";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import ErrorPage from "./pages/ErrorPage";
+import DetailPage from "./pages/DetailPage";
+import HotMovie from "./pages/HotMovie";
+import AllMovie from "./pages/AllMovie";
+import NewMovie from "./pages/NewMovie";
+import AllTvSeries from "./pages/AllTvSeries";
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="*" element={<ErrorPage />} />
+        <Route path="/hot" element={<HotMovie />} />
+        <Route path="/new" element={<NewMovie />} />
+        <Route path="/movie" element={<AllMovie />}/>
+        <Route path="/tv" element={<AllTvSeries />} />
+        <Route path="/detail">
+          <Route path=":detailId" element={<DetailPage/>}/>
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
