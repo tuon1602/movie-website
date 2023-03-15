@@ -7,9 +7,9 @@ import { useLocation } from "react-router-dom";
 
 const DetailPage = () => {
   const location = useLocation()
-  console.log(location.state)
+  // console.log(location.state)
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
+    <Space direction="vertical" style={{ width: "100%",color:"" }}>
       <Layout>
         <Header />
         <Detail movieFetchData={location.state}/>

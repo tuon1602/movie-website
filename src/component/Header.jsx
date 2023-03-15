@@ -14,6 +14,9 @@ import {
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import SearchMovie from "./SearchMovie/SearchMovie";
+import Login from "./Login/Login";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -38,6 +41,7 @@ const text_white = {
 };
 
 const Header = () => {
+  const navigate = useNavigate();
   const [openLogin, setOpenLogin] = useState(false);
   const showLoginModal = () => {
     setOpenLogin(true);
@@ -48,6 +52,9 @@ const Header = () => {
   const handleCancel = () => {
     setOpenLogin(false);
   };
+  const navigateCollectionPage = () => {
+    navigate("/collection");
+  };
   return (
     <Space style={Header_Style}>
       <Space direction="horizontal" align="center" size="large">
@@ -56,11 +63,7 @@ const Header = () => {
             NextPhim
           </Title>
         </Link>
-        <Input
-          placeholder="Search movie"
-          size="middle"
-          prefix={<SearchOutlined />}
-        />
+        <SearchMovie />
         {/* <Link to="/hot" style={text_white}>
           Phim Hot
         </Link>
@@ -68,74 +71,32 @@ const Header = () => {
           Phim Mới
         </Link> */}
         <Link to="/movie" style={text_white}>
-          Phim Lẻ
+          Movies
         </Link>
         <Link to="/tv " style={text_white}>
-          Phim Bộ
+          TvSeries
         </Link>
       </Space>
       <Space>
+        <Button type="primary" onClick={navigateCollectionPage}>
+          My Collection
+        </Button>
         <Button type="primary" onClick={showLoginModal}>
-          Đăng nhập
+          Login
         </Button>
         <Modal
-          title="Đăng nhập"
+          title="login"
           open={openLogin}
           onOk={handleOk}
           onCancel={handleCancel}
           footer={
-            <Button key="back" onClick={handleCancel}>Close</Button>
+            <Button key="back" onClick={handleCancel}>
+              Close
+            </Button>
           }
+          width={450}
         >
-          <Form>
-            <Form.Item
-              label="Tài khoản"
-              name="username"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your username!",
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Mật khẩu"
-              name="password"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your password!",
-                },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-
-            <Form.Item
-              name="remember"
-              valuePropName="checked"
-              wrapperCol={{
-                offset: 8,
-                span: 16,
-              }}
-            >
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
-
-            <Form.Item
-              wrapperCol={{
-                offset: 8,
-                span: 16,
-              }}
-            >
-              <Button type="primary" htmlType="submit">
-                Login
-              </Button>
-            </Form.Item>
-          </Form>
+          <Login />
         </Modal>
       </Space>
     </Space>

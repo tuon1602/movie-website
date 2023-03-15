@@ -1,14 +1,27 @@
 import axios from "axios";
-import React from "react";
-import { useState, useEffect, useRef } from "react";
+import React, { useCallback } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import YouTube from "react-youtube";
 import "./Detail.scss";
 import ErrorPage from "../../pages/ErrorPage";
-import { Image, Row, Col, Typography, Button, Link, Card, Layout } from "antd";
-import { PlusOutlined, StarFilled } from "@ant-design/icons";
+import {
+  Image,
+  Row,
+  Col,
+  Typography,
+  Button,
+  Link,
+  Card,
+  Layout,
+  Skeleton,
+  Alert,
+  Modal,
+} from "antd";
+import { PlusOutlined, StarFilled, CheckOutlined } from "@ant-design/icons";
 import { useNavigate, Outlet } from "react-router-dom";
 import LazyLoad from "react-lazy-load";
-
+import { useSelector, useDispatch } from "react-redux";
+import { useMyCollectionStore } from "../../store/store";
 const { Title, Paragraph } = Typography;
 const { Meta } = Card;
 
@@ -20,6 +33,15 @@ const gray_text = {
 };
 
 const Detail = (props) => {
+  // zustand
+  const globalCollectionStore = useMyCollectionStore(
+    (state) => state.collection
+  );
+  console.log(globalCollectionStore);
+  const addToCollection = useMyCollectionStore(
+    (state) => state.addToCollection
+  );
+  //React.state
   const [movieFetchData, setMovieFetchData] = useState(props.movieFetchData);
   const navigate = useNavigate();
   const [detailData, setDetailData] = useState([]);
@@ -27,6 +49,7 @@ const Detail = (props) => {
   const [productionContries, setProductionContries] = useState([]);
   const [video, setVideo] = useState([]);
   const [similarMovieData, setSimilarMovieData] = useState([]);
+  const [isOpenAddAlert, setIsOpenAddAlert] = useState(false);
   //import youtube into react
   const opts = {
     height: "390",
@@ -58,7 +81,8 @@ const Detail = (props) => {
         setProductionContries(res.data.production_countries[0].name);
         setVideo(
           trailerData.data.results.find((video) => video.type === "Trailer") ||
-            trailerData.data.results[0]
+            trailerData.data.results[0] ||
+            trailerData.data.results
         );
         setSimilarMovieData(getSimilarMovieData.data.results.slice(0, 5));
       } else if (
@@ -94,6 +118,7 @@ const Detail = (props) => {
       navigate(`/detail/${id}`);
       window.scrollTo({ top: 0, behavior: "smooth" });
       setMovieFetchData({ movieId: id, type: type });
+      console.log(detailData);
     } catch (error) {
       console.error(error);
       return <ErrorPage />;
@@ -104,9 +129,27 @@ const Detail = (props) => {
   //     const res = await axios.get("")
   //   }
   // }
+  // console.log(collection)
+  // useEffect(()=>{
+  //   const unSubscribe = globalCollectionStore.subscribe((collection)=>{
+  //     const itemInCollection = collection.some((item)=>{item.movieId === movieFetchData.movieId, item.type === movieFetchData.type})
+  //     setIsAddedToCollection(itemInCollection)
+  //   })
+  //   return unSubscribe
+  // },[globalCollectionStore])
+  const handleAddToCollection = useCallback(
+    (id, type,release_date,title,img) => {
+      addToCollection({ movieId: id, type: type,release_date:release_date, name:title,img:img });
+      if (addToCollection) {
+        setIsOpenAddAlert(!isOpenAddAlert);
+      }
+    },
+    [addToCollection]
+  );
   useEffect(() => {
     getDetailData();
-  }, [movieFetchData]);
+    // console.log(collection)
+  }, [movieFetchData.movieId]);
 
   return (
     <>
@@ -160,16 +203,41 @@ const Detail = (props) => {
                   >
                     Watch Now
                   </Button>
-                  <Button
-                    icon={<PlusOutlined />}
-                    type="primary"
-                    ghost
-                    size="large"
-                  >
-                    Collection
-                  </Button>
+                  {globalCollectionStore.find(
+                    (item) =>
+                      item.movieId === movieFetchData.movieId &&
+                      item.type === movieFetchData.type
+                  ) ? (
+                    <Button
+                      style={{ borderColor: "white", color: "white" }}
+                      type="primary"
+                      disabled
+                      ghost
+                      size="large"
+                      icom={<CheckOutlined />}
+                    >
+                      Added to Collection
+                    </Button>
+                  ) : (
+                    <Button
+                      icon={<PlusOutlined />}
+                      type="primary"
+                      ghost
+                      size="large"
+                      onClick={() =>
+                        handleAddToCollection(
+                          movieFetchData.movieId,
+                          movieFetchData.type,
+                          detailData.release_date || detailData.first_air_date,
+                          detailData.name || detailData.title,
+                          detailData.poster_path
+                        )
+                      }
+                    >
+                      Collection
+                    </Button>
+                  )}
                 </div>
-
                 <div>
                   {genres.map((genre) => (
                     <a href="/">
@@ -198,10 +266,8 @@ const Detail = (props) => {
                 <Title level={4} style={white_text}>
                   Trailer
                 </Title>
-                {video === [] ? (
-                  <YouTube disabled />
-                ) : (
-                  <YouTube videoId={video.key} opts={opts} />
+                {video && (
+                  <YouTube videoId={video?.key} opts={opts} key={video?.key} />
                 )}
               </div>
               <div style={{ marginTop: "2rem" }}>
@@ -232,6 +298,16 @@ const Detail = (props) => {
                 </div>
               </div>
             </Col>
+            {isOpenAddAlert && (
+                  <Alert
+                    message="Added Successful"
+                    description="Your movie have been moved to collection page"
+                    type="success"
+                    showIcon
+                    closable
+                    style={{position:"absolute",top:530,left:0}}
+                  />
+                )}
           </Row>
         </LazyLoad>
       </section>
